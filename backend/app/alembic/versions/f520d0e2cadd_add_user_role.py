@@ -31,7 +31,7 @@ def upgrade():
                existing_type=postgresql.JSONB(astext_type=sa.Text()),
                nullable=True,
                existing_server_default=sa.text("'[]'::jsonb"))
-    op.add_column('user', sa.Column('role', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False))
+    op.add_column('user', sa.Column('role', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False, server_default=sa.text("'CREATOR'")))
     # ### end Alembic commands ###
 
 

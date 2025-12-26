@@ -2,6 +2,9 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi import Request
+import traceback
 
 from app.api.main import api_router
 from app.core.config import settings
@@ -31,3 +34,10 @@ if settings.all_cors_origins:
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+@app.exception_handler(Exception)
+async def validation_exception_handler(request: Request, exc: Exception):
+    print("CAPTURED EXCEPTION:", exc)
+    with open("app.log", "a") as f:
+        f.write(traceback.format_exc())
+    return JSONResponse(status_code=500, content={"message": "Internal Server Error", "detail": str(exc)})

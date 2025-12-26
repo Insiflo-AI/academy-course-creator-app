@@ -98,7 +98,9 @@ class Lesson(LessonBase, table=True):
     quiz: list[dict[str, Any]] = Field(
         default_factory=list, sa_column=Column(JSONB)
     )
-    module: "Module" = Relationship(back_populates="lessons")
+    module: "Module" = Relationship(
+        sa_relationship=relationship("Module", back_populates="lessons")
+    )
 
 
 class LessonPublic(LessonBase):
@@ -132,7 +134,9 @@ class Module(ModuleBase, table=True):
     course_id: uuid.UUID = Field(
         foreign_key="course.id", nullable=False, ondelete="CASCADE"
     )
-    course: "Course" = Relationship(back_populates="modules")
+    course: "Course" = Relationship(
+        sa_relationship=relationship("Course", back_populates="modules")
+    )
     lessons: List["Lesson"] = Relationship(
         sa_relationship=relationship("Lesson", back_populates="module", cascade="all, delete-orphan")
     )
@@ -180,7 +184,9 @@ class Course(CourseBase, table=True):
     owner_id: uuid.UUID | None = Field(
         default=None, foreign_key="user.id", ondelete="SET NULL"
     )
-    owner: "User" = Relationship(back_populates="courses")
+    owner: "User" = Relationship(
+        sa_relationship=relationship("User", back_populates="courses")
+    )
     modules: List["Module"] = Relationship(
         sa_relationship=relationship("Module", back_populates="course", cascade="all, delete-orphan")
     )
