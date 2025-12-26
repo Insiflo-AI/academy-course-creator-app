@@ -98,8 +98,8 @@ async def generate_module_lessons(
     Step 2: Suggest Lessons for a Module.
     Input: { "courseTitle": str, "moduleTitle": str, "moduleDescription": str, ... }
     """
-    course_title = data.get("courseTitle", "Unknown Course")
-    module_title = data.get("moduleTitle", "Unknown Module")
+    course_title = data.get("courseTitle") or data.get("course_title") or "Unknown Course"
+    module_title = data.get("moduleTitle") or data.get("module_title") or "Unknown Module"
     
     system_prompt = (
         "You are an expert curriculum designer. Suggest an ordered list of lesson titles "
@@ -127,7 +127,9 @@ async def generate_lesson_content(
     Step 3: Draft Lesson Content.
     Input: { "courseTitle": str, "moduleTitle": str, "lessonTitle": str, ... }
     """
-    lesson_title = data.get("lessonTitle", "")
+    lesson_title = data.get("lessonTitle") or data.get("lesson_title") or ""
+    course_title = data.get("courseTitle") or data.get("course_title")
+    module_title = data.get("moduleTitle") or data.get("module_title")
     
     system_prompt = (
         "You are an expert teacher. Generate structured content ONLY for this single lesson. "
@@ -137,8 +139,8 @@ async def generate_lesson_content(
     )
     
     user_content = (
-        f"Course: {data.get('courseTitle')}\n"
-        f"Module: {data.get('moduleTitle')}\n"
+        f"Course: {course_title}\n"
+        f"Module: {module_title}\n"
         f"Lesson: {lesson_title}\n"
     )
 

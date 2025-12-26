@@ -15,7 +15,7 @@ async def generate_ai_response(
     Fallback to enhanced mock if no API key is set.
     """
     if not settings.AI_API_KEY:
-        return _mock_generate_response(system_prompt, user_content)
+        return _get_smart_mock_response(system_prompt, user_content)
 
     try:
         client = AsyncOpenAI(api_key=settings.AI_API_KEY)
@@ -30,8 +30,33 @@ async def generate_ai_response(
         return response.choices[0].message.content or ""
     except Exception as e:
         logger.error(f"AI Generation failed: {e}")
-        # Fallback on error to keep app usable
-        return f"[Error: {e}] Falling back to mock: " + _mock_generate_response(system_prompt, user_content)
+        # Fallback to smart mock to keep app usable
+        # In JSON mode, we cannot prepend text errors or it breaks parsing
+        return _get_smart_mock_response(system_prompt, user_content)
+
+
+def _get_smart_mock_response(system_prompt: str, user_content: str) -> str:
+    """Decides whether to return structured JSON or text based on prompt."""
+    if "json" in system_prompt.lower():
+        # Extract basic context from user_content for the mock structure
+        course_title = "Course"
+        module_title = None
+        lesson_title = None
+        
+        for line in user_content.splitlines():
+            if line.startswith("Title:"):
+                course_title = line.replace("Title:", "").strip()
+            elif line.startswith("Course:"):
+                course_title = line.replace("Course:", "").strip()
+            elif line.startswith("Module:"):
+                module_title = line.replace("Module:", "").strip()
+            elif line.startswith("Lesson:"):
+                lesson_title = line.replace("Lesson:", "").strip()
+        
+        structured_data = _generate_dynamic_mock_structure(course_title, module_title, lesson_title)
+        return json.dumps(structured_data)
+        
+    return _mock_generate_response(system_prompt, user_content)
 
 
 async def build_structured_stub(payload: dict[str, Any]) -> dict[str, Any]:

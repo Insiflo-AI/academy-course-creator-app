@@ -8,11 +8,17 @@ import type {
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:8000") + "/api/v1"
 
 async function postJSON<T>(endpoint: string, body: unknown): Promise<T> {
+  const token = localStorage.getItem("access_token")
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  }
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${API_BASE}${endpoint}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(body),
   })
 

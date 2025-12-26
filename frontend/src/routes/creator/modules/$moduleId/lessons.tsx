@@ -61,7 +61,10 @@ function ModuleLessonsPage() {
 
   const handleConfirm = async () => {
     if (!module) return
-    await saveLessons(module.id, lessons)
+    const validLessons = lessons.filter(l => l.title.trim() !== "")
+    if (validLessons.length < 1) return // Maybe show a toast or something?
+
+    await saveLessons(module.id, validLessons)
     navigate({ to: `/creator/courses/${course?.id}/outline` })
   }
 

@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Box, Button, Heading, Text, VStack, HStack, Input, Textarea, Card, IconButton, Spinner } from "@chakra-ui/react"
+import { Box, Button, Heading, Text, VStack, HStack, Input, Textarea, Card, IconButton, Spinner, Flex, Icon } from "@chakra-ui/react"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { useState, useEffect } from "react"
 import { FaTrash, FaPlus, FaMagic } from "react-icons/fa"
@@ -31,7 +31,7 @@ function OutlinePage() {
     // Initialize state from course data once loaded
     useEffect(() => {
         if (course) {
-            if (course.learning_objectives) setObjectives([...course.learning_objectives])
+            if (course.learningObjectives) setObjectives([...course.learningObjectives])
             if (course.modules) {
                 setModules(course.modules.map(m => ({ title: m.title, description: m.description || "" })))
             }
@@ -44,10 +44,10 @@ function OutlinePage() {
         try {
             const result = await generateCourseOutline({
                 title: course.title,
-                shortDescription: course.short_description,
-                targetAudience: course.target_audience,
-                level: course.level,
-                contentStyle: course.content_style
+                shortDescription: course.shortDescription || undefined,
+                targetAudience: course.targetAudience || undefined,
+                level: course.level || undefined,
+                contentStyle: course.contentStyle || undefined
             })
             setObjectives(result.learningObjectives || [])
             setModules(result.modules || [])
@@ -62,18 +62,12 @@ function OutlinePage() {
         if (!course) return
         await updateCourse({
             id: course.id,
-            learning_objectives: objectives,
-            modules: modules.map((m, i) => ({
-                ...m,
-                order: i + 1,
-                // If updating existing, we might lose IDs if we are not careful. 
-                // For simplicity in this demo, we are doing a full replace or relying on backend to handle diffs.
-                // In a real app we'd track IDs.
-                outline_confirmed: true
+            learningObjectives: objectives,
+            modules: modules.map((m) => ({
+                title: m.title,
+                description: m.description
             }))
         })
-        // Navigate to first module
-        // We need to re-fetch or wait for update to get IDs, but for now let's hope the cache invalidation works fast enough or we just go to modules list
         navigate({ to: "/creator" })
     }
 

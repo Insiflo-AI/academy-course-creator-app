@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { Box, Button, Heading, Input, Text, Textarea, VStack } from "@chakra-ui/react"
+import { Box, Button, Flex, Heading, Input, Text, Textarea, VStack } from "@chakra-ui/react"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -7,6 +7,8 @@ import { CreatorLayoutShell } from "@/components/creator/CreatorLayoutShell"
 import { generateCourseOutline } from "@/lib/aiClient"
 import { useCreatorData } from "@/hooks/useCreatorData"
 import { isLoggedIn } from "@/hooks/useAuth"
+
+// ... imports ...
 
 export const Route = createFileRoute("/creator/courses/new")({
   beforeLoad: async () => {
@@ -25,8 +27,7 @@ function NewCoursePage() {
   const [contentStyle, setContentStyle] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate({ from: "/creator/courses/new" })
-  const { createCourse, courses, isLoading } = useCreatorData()
-  const course = courses[0]
+  const { createCourse, isLoading } = useCreatorData()
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -42,7 +43,7 @@ function NewCoursePage() {
         title,
         shortDescription,
         targetAudience,
-        level,
+        level: level as any, // Temporary cast or ensure specific type match
         contentStyle,
         learningObjectives: outline.learningObjectives,
         modules: outline.modules,
@@ -63,55 +64,45 @@ function NewCoursePage() {
   if (isLoading) {
     return (
       <Box bg="white" borderRadius="md" p={6}>
-        <Text>Loading courses...</Text>
-      </Box>
-    )
-  }
-
-  const form = (
-    <Box borderWidth="1px" borderRadius="md" p={4} bg="white">
-      <VStack align="stretch" gap={4}>
-        <Box>
-          <Text fontWeight="semibold">Course title</Text>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Modern Data Ethics" />
-        </Box>
-        <Box>
-          <Text fontWeight="semibold">Short description</Text>
-          <Textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} />
-        </Box>
-        <Box>
-          <Text fontWeight="semibold">Target audience</Text>
-          <Input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} />
-        </Box>
-        <Box>
-          <Text fontWeight="semibold">Level</Text>
-          <Input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="BEGINNER / INTERMEDIATE / ADVANCED" />
-        </Box>
-        <Box>
-          <Text fontWeight="semibold">Content style</Text>
-          <Input value={contentStyle} onChange={(e) => setContentStyle(e.target.value)} />
-        </Box>
-        <Button onClick={handleSubmit} isLoading={loading} colorPalette="purple">
-          Generate outline with AI
-        </Button>
-      </VStack>
-    </Box>
-  )
-
-  if (!course) {
-    return (
-      <Box>
-        <Heading size="lg" mb={4}>
-          Create your first course
-        </Heading>
-        {form}
+        <Text>Loading...</Text>
       </Box>
     )
   }
 
   return (
-    <CreatorLayoutShell course={course} currentStep="Setup">
-      {form}
+    <CreatorLayoutShell currentStep="Setup">
+      <Box minH="full">
+        <Heading size="lg" mb={6}>Create your first course</Heading>
+        <Box borderWidth="1px" borderRadius="md" p={6} bg="white" shadow="sm">
+          <VStack align="stretch" gap={6}>
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Course title</Text>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Modern Data Ethics" size="lg" />
+            </Box>
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Short description</Text>
+              <Textarea value={shortDescription} onChange={(e) => setShortDescription(e.target.value)} placeholder="What will students learn?" rows={3} />
+            </Box>
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Target audience</Text>
+              <Input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} placeholder="e.g., Data Scientists" />
+            </Box>
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Level</Text>
+              <Input value={level} onChange={(e) => setLevel(e.target.value)} placeholder="BEGINNER / INTERMEDIATE / ADVANCED" />
+            </Box>
+            <Box>
+              <Text fontWeight="semibold" mb={2}>Content style</Text>
+              <Input value={contentStyle} onChange={(e) => setContentStyle(e.target.value)} placeholder="e.g., Professional, Casual, Academic" />
+            </Box>
+            <Flex justify="flex-end" pt={4}>
+              <Button onClick={handleSubmit} loading={loading} colorPalette="purple" size="lg">
+                Generate outline with AI
+              </Button>
+            </Flex>
+          </VStack>
+        </Box>
+      </Box>
     </CreatorLayoutShell>
   )
 }

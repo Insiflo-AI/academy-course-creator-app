@@ -34,6 +34,7 @@ interface CreatorState {
   saveLessons: (moduleId: string, lessons: { id?: string; title: string; summary?: string }[]) => Promise<Lesson[]>
   saveLessonContent: (lessonId: string, content: Partial<LessonContent>, status?: LessonStatus) => Promise<void>
   saveQuiz: (lessonId: string, questions: QuizQuestion[]) => Promise<void>
+  updateCourse: (payload: { id: string; learningObjectives: string[]; modules: { title: string; description: string }[] }) => Promise<void>
 }
 
 const CreatorDataContext = createContext<CreatorState | undefined>(undefined)
@@ -44,14 +45,17 @@ export function CreatorDataProvider({ children }: PropsWithChildren) {
   const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const refreshCourses = useCallback(async () => {
+    console.log("refreshCourses: starting...", { isLoggedIn: isLoggedIn() })
     setIsLoading(true)
     try {
       const data = await fetchCourses()
+      console.log("refreshCourses: success", data)
       setCourses(data)
     } catch (error) {
       console.error("Failed to load courses", error)
       showErrorToast("Failed to load courses. Please try refreshing.")
     } finally {
+      console.log("refreshCourses: finally, setting isLoading false")
       setIsLoading(false)
     }
   }, [showErrorToast])
@@ -163,6 +167,20 @@ export function CreatorDataProvider({ children }: PropsWithChildren) {
     [courses, refreshCourse, showSuccessToast, showErrorToast],
   )
 
+  const updateCourse: CreatorState["updateCourse"] = useCallback(
+    async ({ id, learningObjectives, modules }) => {
+      try {
+        await import("@/lib/courseApi").then(m => m.updateCourseOutline(id, { learningObjectives, modules }))
+        await refreshCourse(id)
+        showSuccessToast("Course outline updated.")
+      } catch (error) {
+        showErrorToast("Could not update course outline.")
+        throw error
+      }
+    },
+    [refreshCourse, showSuccessToast, showErrorToast]
+  )
+
   const value = useMemo(
     () => ({
       courses,
@@ -172,8 +190,9 @@ export function CreatorDataProvider({ children }: PropsWithChildren) {
       saveLessons,
       saveLessonContent,
       saveQuiz,
+      updateCourse,
     }),
-    [courses, isLoading, refreshCourses, createCourse, saveLessons, saveLessonContent, saveQuiz],
+    [courses, isLoading, refreshCourses, createCourse, saveLessons, saveLessonContent, saveQuiz, updateCourse],
   )
 
   return <CreatorDataContext.Provider value={value}>{children}</CreatorDataContext.Provider>

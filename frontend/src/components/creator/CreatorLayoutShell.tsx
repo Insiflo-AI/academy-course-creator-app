@@ -32,7 +32,7 @@ function ProgressSidebar({ course }: SidebarProps) {
       </Box>
 
       <VStack align="stretch" gap={0}>
-        <Link to={`/creator/courses/${course.id}/outline`}>
+        <Link to="/creator/courses/$courseId/outline" params={{ courseId: course.id }}>
           {({ isActive }) => (
             <HStack p={3} bg={isActive ? "purple.50" : "transparent"} borderLeftWidth="3px" borderColor={isActive ? "purple.500" : "transparent"} _hover={{ bg: "gray.100" }} cursor="pointer">
               <Icon as={FaList} color={isActive ? "purple.500" : "gray.400"} />
@@ -43,7 +43,7 @@ function ProgressSidebar({ course }: SidebarProps) {
 
         {course.modules?.map((module: any, mIdx: number) => (
           <Box key={module.id}>
-            <Link to={`/creator/modules/${module.id}/lessons`}>
+            <Link to="/creator/modules/$moduleId/lessons" params={{ moduleId: module.id }}>
               {({ isActive }) => (
                 <HStack p={3} bg={isActive ? "purple.50" : "transparent"} borderLeftWidth="3px" borderColor={isActive ? "purple.500" : "transparent"} _hover={{ bg: "gray.100" }}>
                   <Badge size="sm" variant="subtle" colorPalette="gray">{mIdx + 1}</Badge>
@@ -54,7 +54,7 @@ function ProgressSidebar({ course }: SidebarProps) {
 
             <VStack align="stretch" gap={0} pl={0}>
               {module.lessons?.map((lesson: any) => (
-                <Link key={lesson.id} to={`/creator/lessons/${lesson.id}`}>
+                <Link key={lesson.id} to="/creator/lessons/$lessonId" params={{ lessonId: lesson.id }}>
                   {({ isActive }) => (
                     <HStack py={2} pl={10} pr={2} bg={isActive ? "purple.50" : "transparent"} _hover={{ bg: "gray.100" }}>
                       <StatusIcon status={lesson.status} />
@@ -117,16 +117,14 @@ function TopStepper({ currentStep }: { currentStep: string }) {
 }
 
 interface CreatorLayoutProps extends PropsWithChildren {
-  course: any
+  course?: any
   currentStep: string
 }
 
 export function CreatorLayoutShell({ children, course, currentStep }: CreatorLayoutProps) {
-  if (!course) return null;
-
   return (
     <Flex h="100vh" w="100vw" overflow="hidden" bg="white">
-      <ProgressSidebar course={course} />
+      {course && <ProgressSidebar course={course} />}
       <Flex direction="column" flex="1" overflow="hidden">
         <TopStepper currentStep={currentStep} />
         <Box flex="1" overflowY="auto" bg="gray.50" p={8}>

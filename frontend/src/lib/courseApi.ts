@@ -5,6 +5,7 @@ import type {
   Lesson,
   LessonContent,
   LessonStatus,
+  Level,
   Module,
   QuizQuestion,
 } from "@/types/course"
@@ -65,11 +66,42 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   })
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
+      throw new Error("Session expired. Please login again.")
+    }
     const detail = await response.text()
+    if (response.status === 404 && detail.includes("User not found")) {
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
+      throw new Error("User account not found. Please login again.")
+    }
     throw new Error(detail || `Request failed with status ${response.status}`)
   }
 
   return (await response.json()) as T
+}
+
+export async function updateCourseOutline(
+  courseId: string,
+  payload: { learningObjectives: string[]; modules: { title: string; description?: string }[] }
+): Promise<Course> {
+  const body = {
+    learning_objectives: payload.learningObjectives,
+    modules: payload.modules.map((m, index) => ({
+      title: m.title,
+      description: m.description,
+      order: index + 1,
+      outline_confirmed: true
+    }))
+  }
+
+  const data = await request<ApiCourse>(`/courses/${courseId}/outline`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  })
+  return mapCourse(data)
 }
 
 function mapLesson(apiLesson: ApiLesson): Lesson {
@@ -112,7 +144,7 @@ function mapCourse(apiCourse: ApiCourse): Course {
 }
 
 export async function fetchCourses(): Promise<Course[]> {
-  const payload = await request<CoursesResponse>("/courses")
+  const payload = await request<CoursesResponse>("/courses/")
   return payload.data.map(mapCourse)
 }
 
@@ -147,7 +179,7 @@ export async function createCourse(payload: {
     })),
   }
 
-  const data = await request<ApiCourse>("/courses", {
+  const data = await request<ApiCourse>("/courses/", {
     method: "POST",
     body: JSON.stringify(body),
   })
