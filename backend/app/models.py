@@ -135,7 +135,7 @@ class Module(ModuleBase, table=True):
         foreign_key="course.id", nullable=False, ondelete="CASCADE"
     )
     course: "Course" = Relationship(
-        sa_relationship=relationship("Course", back_populates="modules")
+        sa_relationship=relationship("app.models.Course", back_populates="modules")
     )
     lessons: List["Lesson"] = Relationship(
         sa_relationship=relationship("Lesson", back_populates="module", cascade="all, delete-orphan")
