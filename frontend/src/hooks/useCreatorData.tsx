@@ -1,198 +1,179 @@
-// @ts-nocheck
-import { createContext, type PropsWithChildren, useContext, useMemo, useState } from "react"
+import {
+  createContext,
+  type PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 
-import type {
-  Course,
-  CourseStatus,
-  Lesson,
-  LessonContent,
-  LessonStatus,
-  Module,
-  QuizQuestion,
-} from "@/types/course"
+import {
+  createCourse as apiCreateCourse,
+  fetchCourse,
+  fetchCourses,
+  saveLessonQuiz,
+  saveModuleLessons,
+  updateLessonContent,
+} from "@/lib/courseApi"
+import type { Course, Lesson, LessonContent, LessonStatus, QuizQuestion } from "@/types/course"
+import useCustomToast from "./useCustomToast"
+
+import { isLoggedIn } from "@/hooks/useAuth"
 
 interface CreatorState {
   courses: Course[]
-  createCourse: (course: Omit<Course, "id" | "modules" | "learningObjectives"> & {
-    learningObjectives?: string[]
-    modules?: { title: string; description: string }[]
-  }) => Course
-  updateCourse: (courseId: string, data: Partial<Course>) => void
-  confirmOutline: (
-    courseId: string,
-    learningObjectives: string[],
-    modules: { title: string; description: string }[],
-  ) => void
-  saveLessons: (
-    moduleId: string,
-    lessons: { title: string; summary?: string }[],
-  ) => Lesson[]
-  saveLessonContent: (lessonId: string, content: Partial<LessonContent>, status?: LessonStatus) => void
-  saveQuiz: (lessonId: string, questions: QuizQuestion[]) => void
+  isLoading: boolean
+  refreshCourses: () => Promise<void>
+  createCourse: (
+    course: Omit<Course, "id" | "modules" | "learningObjectives"> & {
+      learningObjectives?: string[]
+      modules?: { title: string; description?: string }[]
+    },
+  ) => Promise<Course>
+  saveLessons: (moduleId: string, lessons: { id?: string; title: string; summary?: string }[]) => Promise<Lesson[]>
+  saveLessonContent: (lessonId: string, content: Partial<LessonContent>, status?: LessonStatus) => Promise<void>
+  saveQuiz: (lessonId: string, questions: QuizQuestion[]) => Promise<void>
 }
 
 const CreatorDataContext = createContext<CreatorState | undefined>(undefined)
 
-const defaultLessonContent: LessonContent = {
-  definition: "",
-  keyComponentsAndTerms: "",
-  crossTopics: "",
-  outcomesProsCons: "",
-  scenariosApplications: "",
-  exercises: "",
-  nextLessonTeaser: "",
-}
-
 export function CreatorDataProvider({ children }: PropsWithChildren) {
-  const [courses, setCourses] = useState<Course[]>(() => {
-    const starterId = crypto.randomUUID()
-    const moduleId = crypto.randomUUID()
-    const lessonId = crypto.randomUUID()
-    return [
-      {
-        id: starterId,
-        title: "AI Teaching Foundations",
-        shortDescription: "A quick-start course to demonstrate the SaaS flow.",
-        learningObjectives: [
-          "Guide educators through iterative course building",
-          "Show how AI drafts outlines and lessons",
-        ],
-        status: "IN_PROGRESS",
-        modules: [
-          {
-            id: moduleId,
-            courseId: starterId,
-            title: "Getting Started",
-            description: "Plan the course skeleton with AI support.",
-            order: 1,
-            outlineConfirmed: true,
-            lessons: [
-              {
-                id: lessonId,
-                title: "Working with AI Drafts",
-                summary: "Understand how to co-create with AI",
-                order: 1,
-                status: "DRAFT",
-                content: defaultLessonContent,
-                quiz: [],
-              },
-            ],
-          },
-        ],
-      },
-    ]
-  })
+  const [courses, setCourses] = useState<Course[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const { showSuccessToast, showErrorToast } = useCustomToast()
 
-  const createCourse: CreatorState["createCourse"] = (course) => {
-    const newCourse: Course = {
-      ...course,
-      id: crypto.randomUUID(),
-      status: (course.status || "IN_PROGRESS") as CourseStatus,
-      learningObjectives: course.learningObjectives || [],
-      modules: (course.modules || []).map((mod, index) => ({
-        id: uuidv4(),
-        courseId: "",
-        title: mod.title,
-        description: mod.description,
-        order: index + 1,
-        outlineConfirmed: false,
-        lessons: [],
-      })),
+  const refreshCourses = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const data = await fetchCourses()
+      setCourses(data)
+    } catch (error) {
+      console.error("Failed to load courses", error)
+      showErrorToast("Failed to load courses. Please try refreshing.")
+    } finally {
+      setIsLoading(false)
     }
-    newCourse.modules = newCourse.modules.map((mod) => ({ ...mod, courseId: newCourse.id }))
+  }, [showErrorToast])
 
-    setCourses((prev) => [...prev, newCourse])
-    return newCourse
-  }
+  const refreshCourse = useCallback(async (courseId: string) => {
+    try {
+      const nextCourse = await fetchCourse(courseId)
+      setCourses((prev) => {
+        const others = prev.filter((course) => course.id !== courseId)
+        return [...others, nextCourse]
+      })
+      return nextCourse
+    } catch (error) {
+      console.error("Failed to refresh course", error)
+      showErrorToast("Could not fetch latest course data.")
+      throw error
+    }
+  }, [showErrorToast])
 
-  const updateCourse = (courseId: string, data: Partial<Course>) => {
-    setCourses((prev) =>
-      prev.map((c) => (c.id === courseId ? { ...c, ...data, id: c.id, modules: c.modules } : c)),
-    )
-  }
 
-  const confirmOutline: CreatorState["confirmOutline"] = (
-    courseId,
-    learningObjectives,
-    modules,
-  ) => {
-    setCourses((prev) =>
-      prev.map((c) => {
-        if (c.id !== courseId) return c
-        const updatedModules: Module[] = modules.map((mod, index) => ({
-          id: c.modules[index]?.id || crypto.randomUUID(),
-          courseId: c.id,
-          title: mod.title,
-          description: mod.description,
+  // ... imports remain the same ...
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      void refreshCourses()
+    } else {
+      setIsLoading(false)
+    }
+  }, [refreshCourses])
+
+  const createCourse: CreatorState["createCourse"] = useCallback(async (courseInput) => {
+    try {
+      const created = await apiCreateCourse(courseInput)
+      setCourses((prev) => [...prev, created])
+      showSuccessToast("Course created successfully.")
+      return created
+    } catch (error) {
+      showErrorToast("Could not create the course.")
+      throw error
+    }
+  }, [showSuccessToast, showErrorToast])
+
+  const saveLessons: CreatorState["saveLessons"] = useCallback(
+    async (moduleId, lessons) => {
+      try {
+        const parentCourse = courses.find((course) => course.modules.some((mod) => mod.id === moduleId))
+        const existingModule = parentCourse?.modules.find((mod) => mod.id === moduleId)
+        const payload = lessons.map((lesson, index) => ({
+          id: lesson.id ?? existingModule?.lessons[index]?.id,
+          title: lesson.title,
+          summary: lesson.summary,
           order: index + 1,
-          outlineConfirmed: true,
-          lessons: c.modules[index]?.lessons || [],
         }))
-        return { ...c, learningObjectives, modules: updatedModules, status: "IN_PROGRESS" }
-      }),
-    )
-  }
 
-  const saveLessons: CreatorState["saveLessons"] = (moduleId, lessons) => {
-    let nextLessons: Lesson[] = []
-    setCourses((prev) =>
-      prev.map((course) => ({
-        ...course,
-        modules: course.modules.map((mod) => {
-          if (mod.id !== moduleId) return mod
-          const updatedLessons: Lesson[] = lessons.map((lesson, index) => ({
-            id: mod.lessons[index]?.id || crypto.randomUUID(),
-            title: lesson.title,
-            summary: lesson.summary,
-            order: index + 1,
-            status: mod.lessons[index]?.status || "NOT_STARTED",
-            content: mod.lessons[index]?.content || defaultLessonContent,
-            quiz: mod.lessons[index]?.quiz || [],
-          }))
-          nextLessons = updatedLessons
-          return { ...mod, lessons: updatedLessons }
-        }),
-      })),
-    )
-    return nextLessons
-  }
+        const module = await saveModuleLessons(moduleId, payload)
+        const courseId = parentCourse?.id || module.courseId
+        if (courseId) {
+          const updatedCourse = await refreshCourse(courseId)
+          const updatedModule = updatedCourse.modules.find((mod) => mod.id === moduleId)
+          return updatedModule?.lessons ?? module.lessons
+        }
+        showSuccessToast("Lessons saved and outline updated.")
+        return module.lessons
+      } catch (error) {
+        showErrorToast("Could not save lessons.")
+        throw error
+      }
+    },
+    [courses, refreshCourse, showSuccessToast, showErrorToast],
+  )
 
-  const saveLessonContent: CreatorState["saveLessonContent"] = (lessonId, content, status) => {
-    setCourses((prev) =>
-      prev.map((course) => ({
-        ...course,
-        modules: course.modules.map((mod) => ({
-          ...mod,
-          lessons: mod.lessons.map((lesson) => {
-            if (lesson.id !== lessonId) return lesson
-            return {
-              ...lesson,
-              content: { ...lesson.content, ...content },
-              status: status || lesson.status,
-            }
-          }),
-        })),
-      })),
-    )
-  }
+  const saveLessonContent: CreatorState["saveLessonContent"] = useCallback(
+    async (lessonId, content, status) => {
+      try {
+        const parentCourse = courses.find((course) =>
+          course.modules.some((mod) => mod.lessons.some((lesson) => lesson.id === lessonId)),
+        )
+        await updateLessonContent(lessonId, content, status)
+        if (parentCourse) {
+          await refreshCourse(parentCourse.id)
+        }
+        if (status === "CONFIRMED") {
+          showSuccessToast("Lesson confirmed and saved.")
+        }
+      } catch (error) {
+        showErrorToast("Could not save lesson content.")
+        throw error
+      }
+    },
+    [courses, refreshCourse, showSuccessToast, showErrorToast],
+  )
 
-  const saveQuiz: CreatorState["saveQuiz"] = (lessonId, questions) => {
-    setCourses((prev) =>
-      prev.map((course) => ({
-        ...course,
-        modules: course.modules.map((mod) => ({
-          ...mod,
-          lessons: mod.lessons.map((lesson) =>
-            lesson.id === lessonId ? { ...lesson, quiz: questions, status: "CONFIRMED" } : lesson,
-          ),
-        })),
-      })),
-    )
-  }
+  const saveQuiz: CreatorState["saveQuiz"] = useCallback(
+    async (lessonId, questions) => {
+      try {
+        const parentCourse = courses.find((course) =>
+          course.modules.some((mod) => mod.lessons.some((lesson) => lesson.id === lessonId)),
+        )
+        await saveLessonQuiz(lessonId, questions, "CONFIRMED")
+        if (parentCourse) {
+          await refreshCourse(parentCourse.id)
+        }
+        showSuccessToast("Quiz questions confirmed.")
+      } catch (error) {
+        showErrorToast("Could not save quiz.")
+        throw error
+      }
+    },
+    [courses, refreshCourse, showSuccessToast, showErrorToast],
+  )
 
   const value = useMemo(
-    () => ({ courses, createCourse, updateCourse, confirmOutline, saveLessons, saveLessonContent, saveQuiz }),
-    [courses],
+    () => ({
+      courses,
+      isLoading,
+      refreshCourses,
+      createCourse,
+      saveLessons,
+      saveLessonContent,
+      saveQuiz,
+    }),
+    [courses, isLoading, refreshCourses, createCourse, saveLessons, saveLessonContent, saveQuiz],
   )
 
   return <CreatorDataContext.Provider value={value}>{children}</CreatorDataContext.Provider>

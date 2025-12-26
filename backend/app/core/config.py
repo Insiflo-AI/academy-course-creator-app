@@ -56,6 +56,9 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
 
+    AI_API_KEY: str | None = None
+    AI_MODEL: str = "gpt-4o-mini"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
@@ -75,7 +78,8 @@ class Settings(BaseSettings):
     SMTP_USER: str | None = None
     SMTP_PASSWORD: str | None = None
     EMAILS_FROM_EMAIL: EmailStr | None = None
-    EMAILS_FROM_NAME: EmailStr | None = None
+    # This is the display name that appears in the email client; it is not an address
+    EMAILS_FROM_NAME: str | None = None
 
     @model_validator(mode="after")
     def _set_default_emails_from(self) -> Self:

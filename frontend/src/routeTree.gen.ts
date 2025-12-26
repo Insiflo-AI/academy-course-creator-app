@@ -19,12 +19,11 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
-import { Route as CreatorModulesLessonsRouteImport } from './routes/creator/modules/lessons'
-import { Route as CreatorCoursesOutlineRouteImport } from './routes/creator/courses/outline'
 import { Route as CreatorCoursesNewRouteImport } from './routes/creator/courses/new'
 import { Route as CreatorLessonsLessonIdIndexRouteImport } from './routes/creator/lessons/$lessonId/index'
 import { Route as CreatorModulesModuleIdLessonsRouteImport } from './routes/creator/modules/$moduleId/lessons'
 import { Route as CreatorLessonsLessonIdQuizRouteImport } from './routes/creator/lessons/$lessonId/quiz'
+import { Route as CreatorCoursesCourseIdOutlineRouteImport } from './routes/creator/courses/$courseId/outline'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -75,16 +74,6 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
-const CreatorModulesLessonsRoute = CreatorModulesLessonsRouteImport.update({
-  id: '/creator/modules/lessons',
-  path: '/creator/modules/lessons',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CreatorCoursesOutlineRoute = CreatorCoursesOutlineRouteImport.update({
-  id: '/creator/courses/outline',
-  path: '/creator/courses/outline',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CreatorCoursesNewRoute = CreatorCoursesNewRouteImport.update({
   id: '/creator/courses/new',
   path: '/creator/courses/new',
@@ -108,6 +97,12 @@ const CreatorLessonsLessonIdQuizRoute =
     path: '/creator/lessons/$lessonId/quiz',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CreatorCoursesCourseIdOutlineRoute =
+  CreatorCoursesCourseIdOutlineRouteImport.update({
+    id: '/creator/courses/$courseId/outline',
+    path: '/creator/courses/$courseId/outline',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -120,8 +115,7 @@ export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
   '/creator': typeof CreatorIndexRoute
   '/creator/courses/new': typeof CreatorCoursesNewRoute
-  '/creator/courses/outline': typeof CreatorCoursesOutlineRoute
-  '/creator/modules/lessons': typeof CreatorModulesLessonsRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
   '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
   '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
   '/creator/lessons/$lessonId': typeof CreatorLessonsLessonIdIndexRoute
@@ -137,8 +131,7 @@ export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/creator': typeof CreatorIndexRoute
   '/creator/courses/new': typeof CreatorCoursesNewRoute
-  '/creator/courses/outline': typeof CreatorCoursesOutlineRoute
-  '/creator/modules/lessons': typeof CreatorModulesLessonsRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
   '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
   '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
   '/creator/lessons/$lessonId': typeof CreatorLessonsLessonIdIndexRoute
@@ -156,8 +149,7 @@ export interface FileRoutesById {
   '/_layout/': typeof LayoutIndexRoute
   '/creator/': typeof CreatorIndexRoute
   '/creator/courses/new': typeof CreatorCoursesNewRoute
-  '/creator/courses/outline': typeof CreatorCoursesOutlineRoute
-  '/creator/modules/lessons': typeof CreatorModulesLessonsRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
   '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
   '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
   '/creator/lessons/$lessonId/': typeof CreatorLessonsLessonIdIndexRoute
@@ -175,8 +167,7 @@ export interface FileRouteTypes {
     | '/'
     | '/creator'
     | '/creator/courses/new'
-    | '/creator/courses/outline'
-    | '/creator/modules/lessons'
+    | '/creator/courses/$courseId/outline'
     | '/creator/lessons/$lessonId/quiz'
     | '/creator/modules/$moduleId/lessons'
     | '/creator/lessons/$lessonId'
@@ -192,8 +183,7 @@ export interface FileRouteTypes {
     | '/'
     | '/creator'
     | '/creator/courses/new'
-    | '/creator/courses/outline'
-    | '/creator/modules/lessons'
+    | '/creator/courses/$courseId/outline'
     | '/creator/lessons/$lessonId/quiz'
     | '/creator/modules/$moduleId/lessons'
     | '/creator/lessons/$lessonId'
@@ -210,8 +200,7 @@ export interface FileRouteTypes {
     | '/_layout/'
     | '/creator/'
     | '/creator/courses/new'
-    | '/creator/courses/outline'
-    | '/creator/modules/lessons'
+    | '/creator/courses/$courseId/outline'
     | '/creator/lessons/$lessonId/quiz'
     | '/creator/modules/$moduleId/lessons'
     | '/creator/lessons/$lessonId/'
@@ -225,8 +214,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   CreatorIndexRoute: typeof CreatorIndexRoute
   CreatorCoursesNewRoute: typeof CreatorCoursesNewRoute
-  CreatorCoursesOutlineRoute: typeof CreatorCoursesOutlineRoute
-  CreatorModulesLessonsRoute: typeof CreatorModulesLessonsRoute
+  CreatorCoursesCourseIdOutlineRoute: typeof CreatorCoursesCourseIdOutlineRoute
   CreatorLessonsLessonIdQuizRoute: typeof CreatorLessonsLessonIdQuizRoute
   CreatorModulesModuleIdLessonsRoute: typeof CreatorModulesModuleIdLessonsRoute
   CreatorLessonsLessonIdIndexRoute: typeof CreatorLessonsLessonIdIndexRoute
@@ -304,20 +292,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/creator/modules/lessons': {
-      id: '/creator/modules/lessons'
-      path: '/creator/modules/lessons'
-      fullPath: '/creator/modules/lessons'
-      preLoaderRoute: typeof CreatorModulesLessonsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/creator/courses/outline': {
-      id: '/creator/courses/outline'
-      path: '/creator/courses/outline'
-      fullPath: '/creator/courses/outline'
-      preLoaderRoute: typeof CreatorCoursesOutlineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/creator/courses/new': {
       id: '/creator/courses/new'
       path: '/creator/courses/new'
@@ -344,6 +318,13 @@ declare module '@tanstack/react-router' {
       path: '/creator/lessons/$lessonId/quiz'
       fullPath: '/creator/lessons/$lessonId/quiz'
       preLoaderRoute: typeof CreatorLessonsLessonIdQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/courses/$courseId/outline': {
+      id: '/creator/courses/$courseId/outline'
+      path: '/creator/courses/$courseId/outline'
+      fullPath: '/creator/courses/$courseId/outline'
+      preLoaderRoute: typeof CreatorCoursesCourseIdOutlineRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -374,8 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   CreatorIndexRoute: CreatorIndexRoute,
   CreatorCoursesNewRoute: CreatorCoursesNewRoute,
-  CreatorCoursesOutlineRoute: CreatorCoursesOutlineRoute,
-  CreatorModulesLessonsRoute: CreatorModulesLessonsRoute,
+  CreatorCoursesCourseIdOutlineRoute: CreatorCoursesCourseIdOutlineRoute,
   CreatorLessonsLessonIdQuizRoute: CreatorLessonsLessonIdQuizRoute,
   CreatorModulesModuleIdLessonsRoute: CreatorModulesModuleIdLessonsRoute,
   CreatorLessonsLessonIdIndexRoute: CreatorLessonsLessonIdIndexRoute,
