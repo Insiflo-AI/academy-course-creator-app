@@ -1,5 +1,5 @@
 import { Flex } from "@chakra-ui/react"
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router"
 
 import Navbar from "@/components/Common/Navbar"
 import Sidebar from "@/components/Common/Sidebar"
@@ -17,6 +17,18 @@ export const Route = createFileRoute("/_layout")({
 })
 
 function Layout() {
+  const location = useLocation()
+
+  // Check if we are in the "editor" mode which needs full screen
+  // Matches: /creator/courses/$id/outline, /creator/modules/..., /creator/lessons/...
+  const isCreatorEditor = location.pathname.includes("/creator/courses/") && location.pathname.includes("/outline") ||
+    location.pathname.includes("/creator/modules/") ||
+    location.pathname.includes("/creator/lessons/")
+
+  if (isCreatorEditor) {
+    return <Outlet />
+  }
+
   return (
     <Flex direction="column" h="100vh">
       <Navbar />

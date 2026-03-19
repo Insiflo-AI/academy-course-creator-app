@@ -1,239 +1,132 @@
-# Full Stack FastAPI Template
+# AI Course Creator SaaS
 
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg" alt="Coverage"></a>
+This repository contains a full-stack FastAPI + React application that helps teachers, researchers, and academies build courses with AI assistance. The UX guides creators through setup, outlines, lesson planning, content drafting, and quiz creation while keeping humans in control at every step.
 
-## Technology Stack and Features
+## Features
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-    - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-    - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-    - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-    - 💃 Using TypeScript, hooks, Vite, and other parts of a modern frontend stack.
-    - 🎨 [Chakra UI](https://chakra-ui.com) for the frontend components.
-    - 🤖 An automatically generated frontend client.
-    - 🧪 [Playwright](https://playwright.dev) for End-to-End testing.
-    - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for development and production.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- 📫 Email based password recovery.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
-- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+- **Stepwise AI assistance**: Generate objectives and module outlines, suggest module lessons, draft lesson content, and create quizzes through scoped endpoints instead of dumping full courses.
+- **Creator-first workflow**: Sidebar progress map, top stepper, and per-step editors ensure drafts are reviewed and confirmed by the creator.
+- **FastAPI backend**: Typed request/response models, AI helper routes under `/api/ai`, and a stubbed AI client that can be swapped for a real provider.
+- **React + Chakra UI v3 frontend**: Creator layouts, data hooks, and route pages for course setup, outlines, lessons, content, and quizzes.
+- **Auth-ready template**: Built on the FastAPI full-stack template with JWT auth, CORS, and Sentry hooks.
+- **Docker Compose friendly**: Run the entire stack locally with Postgres via the provided compose files.
 
-### Dashboard Login
+## Repository Layout
 
-[![API docs](img/login.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Dashboard - Admin
-
-[![API docs](img/dashboard.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Dashboard - Create User
-
-[![API docs](img/dashboard-create.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Dashboard - Items
-
-[![API docs](img/dashboard-items.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Dashboard - User Settings
-
-[![API docs](img/dashboard-user-settings.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Dashboard - Dark Mode
-
-[![API docs](img/dashboard-dark.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-### Interactive API Documentation
-
-[![API docs](img/docs.png)](https://github.com/fastapi/full-stack-fastapi-template)
-
-## How To Use It
-
-You can **just fork or clone** this repository and use it as is.
-
-✨ It just works. ✨
-
-### How to Use a Private Repository
-
-If you want to have a private repository, GitHub won't allow you to simply fork it as it doesn't allow changing the visibility of forks.
-
-But you can do the following:
-
-- Create a new GitHub repo, for example `my-full-stack`.
-- Clone this repository manually, set the name with the name of the project you want to use, for example `my-full-stack`:
-
-```bash
-git clone git@github.com:fastapi/full-stack-fastapi-template.git my-full-stack
+```
+.
+├── backend/                # FastAPI app, tests, and supporting scripts
+│   └── app/
+│       ├── api/            # API routers (including AI routes)
+│       ├── core/           # Settings, security, configuration
+│       ├── services/       # AI client abstraction
+│       └── main.py         # FastAPI application factory
+├── frontend/               # React + Chakra UI app (Vite + TypeScript)
+│   └── src/
+│       ├── components/creator/  # Layout shell, sidebar, stepper
+│       ├── hooks/               # Creator data provider
+│       ├── lib/                 # Frontend AI client helper
+│       └── routes/creator/      # Course, module, lesson, quiz pages
+├── docker-compose.yml      # Local stack (frontend, backend, Postgres, Traefik)
+├── development.md          # Compose workflow instructions
+└── scripts/                # Helper scripts for tests and tooling
 ```
 
-- Enter into the new directory:
+## Prerequisites
+
+- Node.js 18+ and npm (for the frontend)
+- Python 3.11+ and [uv](https://docs.astral.sh/uv/) (for backend dependency management)
+- Docker + Docker Compose (recommended for running the full stack)
+
+## Backend Setup
+
+1. Navigate to `backend/` and install dependencies:
+
+   ```bash
+   uv sync
+   ```
+
+2. Create a `.env` file based on `.env.example` (from the FastAPI template) and set at least:
+
+   - `SECRET_KEY`
+   - `FIRST_SUPERUSER_PASSWORD`
+   - `POSTGRES_SERVER`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+   - `AI_API_KEY` (optional; used by the AI client abstraction)
+
+3. Initialize the database (if running locally without Docker) and apply migrations:
+
+   ```bash
+   uv run alembic upgrade head
+   ```
+
+4. Start the API server with live reload:
+
+   ```bash
+   uv run fastapi dev app/main.py
+   ```
+
+Key AI endpoints (prefixed by `/api/v1/ai`):
+
+- `POST /course-outline` – generate course objectives and module outline.
+- `POST /module-lessons` – suggest ordered lesson titles per module.
+- `POST /lesson-content` – draft structured content for a single lesson.
+- `POST /lesson-quiz` – generate multiple-choice questions for a lesson.
+
+These routes delegate to `app/services/ai_client.py`, which currently provides predictable stubbed responses.
+
+## Frontend Setup
+
+1. Navigate to `frontend/` and install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Create a `.env` (or `.env.local`) file to point the app to your backend API, for example:
+
+   ```bash
+   VITE_API_BASE_URL=http://localhost:8000/api/v1
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Build for production:
+
+   ```bash
+   npm run build
+   ```
+
+### Creator Flow Highlights
+
+- **Layout**: `CreatorLayoutShell` wraps all creator pages with `ProgressSidebar` and `TopStepper` navigation.
+- **Course setup**: `/creator/courses/new` captures minimal metadata and triggers outline generation.
+- **Outline editing**: `/creator/courses/[courseId]/outline` lets creators edit objectives/modules and confirm the outline.
+- **Lesson planning**: `/creator/modules/[moduleId]/lessons` manages lesson titles and ordering for each module.
+- **Lesson content**: `/creator/lessons/[lessonId]` drafts structured sections and allows confirmation per lesson.
+- **Quizzes**: `/creator/lessons/[lessonId]/quiz` manages AI-generated quiz questions with manual edits before saving.
+
+The frontend calls the backend AI routes through `src/lib/aiClient.ts` to keep all AI interactions centralized.
+
+## Running with Docker Compose
+
+Use Docker when you want the full stack (backend, frontend, Postgres, Traefik) running together:
 
 ```bash
-cd my-full-stack
+docker compose up --build
 ```
 
-- Set the new origin to your new repository, copy it from the GitHub interface, for example:
+The default configuration exposes the backend on port `8000` and the frontend on port `3000`. See `development.md` for live-reload options and tips on working inside the containers.
 
-```bash
-git remote set-url origin git@github.com:octocat/my-full-stack.git
-```
+## Testing
 
-- Add this repo as another "remote" to allow you to get updates later:
+- Backend: `bash ./scripts/test.sh`
+- Frontend: `npm run test` (unit) and `npm run test:e2e` for Playwright (requires the app to be running)
 
-```bash
-git remote add upstream git@github.com:fastapi/full-stack-fastapi-template.git
-```
+## Notes
 
-- Push the code to your new repository:
-
-```bash
-git push -u origin master
-```
-
-### Update From the Original Template
-
-After cloning the repository, and after doing changes, you might want to get the latest changes from this original template.
-
-- Make sure you added the original repository as a remote, you can check it with:
-
-```bash
-git remote -v
-
-origin    git@github.com:octocat/my-full-stack.git (fetch)
-origin    git@github.com:octocat/my-full-stack.git (push)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (fetch)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (push)
-```
-
-- Pull the latest changes without merging:
-
-```bash
-git pull --no-commit upstream master
-```
-
-This will download the latest changes from this template without committing them, that way you can check everything is right before committing.
-
-- If there are conflicts, solve them in your editor.
-
-- Once you are done, commit the changes:
-
-```bash
-git merge --continue
-```
-
-### Configure
-
-You can then update configs in the `.env` files to customize your configurations.
-
-Before deploying it, make sure you change at least the values for:
-
-- `SECRET_KEY`
-- `FIRST_SUPERUSER_PASSWORD`
-- `POSTGRES_PASSWORD`
-
-You can (and should) pass these as environment variables from secrets.
-
-Read the [deployment.md](./deployment.md) docs for more details.
-
-### Generate Secret Keys
-
-Some environment variables in the `.env` file have a default value of `changethis`.
-
-You have to change them with a secret key, to generate secret keys you can run the following command:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Copy the content and use that as password / secret key. And run that again to generate another secure key.
-
-## How To Use It - Alternative With Copier
-
-This repository also supports generating a new project using [Copier](https://copier.readthedocs.io).
-
-It will copy all the files, ask you configuration questions, and update the `.env` files with your answers.
-
-### Install Copier
-
-You can install Copier with:
-
-```bash
-pip install copier
-```
-
-Or better, if you have [`pipx`](https://pipx.pypa.io/), you can run it with:
-
-```bash
-pipx install copier
-```
-
-**Note**: If you have `pipx`, installing copier is optional, you could run it directly.
-
-### Generate a Project With Copier
-
-Decide a name for your new project's directory, you will use it below. For example, `my-awesome-project`.
-
-Go to the directory that will be the parent of your project, and run the command with your project's name:
-
-```bash
-copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-If you have `pipx` and you didn't install `copier`, you can run it directly:
-
-```bash
-pipx run copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-**Note** the `--trust` option is necessary to be able to execute a [post-creation script](https://github.com/fastapi/full-stack-fastapi-template/blob/master/.copier/update_dotenv.py) that updates your `.env` files.
-
-### Input Variables
-
-Copier will ask you for some data, you might want to have at hand before generating the project.
-
-But don't worry, you can just update any of that in the `.env` files afterwards.
-
-The input variables, with their default values (some auto generated) are:
-
-- `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
-- `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
-- `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
-- `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
-- `smtp_host`: (default: "") The SMTP server host to send emails, you can set it later in .env.
-- `smtp_user`: (default: "") The SMTP server user to send emails, you can set it later in .env.
-- `smtp_password`: (default: "") The SMTP server password to send emails, you can set it later in .env.
-- `emails_from_email`: (default: `"info@example.com"`) The email account to send emails from, you can set it later in .env.
-- `postgres_password`: (default: `"changethis"`) The password for the PostgreSQL database, stored in .env, you can generate one with the method above.
-- `sentry_dsn`: (default: "") The DSN for Sentry, if you are using it, you can set it later in .env.
-
-## Backend Development
-
-Backend docs: [backend/README.md](./backend/README.md).
-
-## Frontend Development
-
-Frontend docs: [frontend/README.md](./frontend/README.md).
-
-## Deployment
-
-Deployment docs: [deployment.md](./deployment.md).
-
-## Development
-
-General development docs: [development.md](./development.md).
-
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
-
-## Release Notes
-
-Check the file [release-notes.md](./release-notes.md).
-
-## License
-
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+- The AI client is stubbed for predictable demo responses; replace `generate_ai_response` in `backend/app/services/ai_client.py` with a real provider when ready.
+- Authentication, security, and database models come from the FastAPI full-stack template; extend them as needed for production.

@@ -14,10 +14,16 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as CreatorIndexRouteImport } from './routes/creator/index'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as CreatorCoursesNewRouteImport } from './routes/creator/courses/new'
+import { Route as CreatorLessonsLessonIdIndexRouteImport } from './routes/creator/lessons/$lessonId/index'
+import { Route as CreatorModulesModuleIdLessonsRouteImport } from './routes/creator/modules/$moduleId/lessons'
+import { Route as CreatorLessonsLessonIdQuizRouteImport } from './routes/creator/lessons/$lessonId/quiz'
+import { Route as CreatorCoursesCourseIdOutlineRouteImport } from './routes/creator/courses/$courseId/outline'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -43,6 +49,11 @@ const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorIndexRoute = CreatorIndexRouteImport.update({
+  id: '/creator/',
+  path: '/creator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -63,6 +74,35 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const CreatorCoursesNewRoute = CreatorCoursesNewRouteImport.update({
+  id: '/creator/courses/new',
+  path: '/creator/courses/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorLessonsLessonIdIndexRoute =
+  CreatorLessonsLessonIdIndexRouteImport.update({
+    id: '/creator/lessons/$lessonId/',
+    path: '/creator/lessons/$lessonId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CreatorModulesModuleIdLessonsRoute =
+  CreatorModulesModuleIdLessonsRouteImport.update({
+    id: '/creator/modules/$moduleId/lessons',
+    path: '/creator/modules/$moduleId/lessons',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CreatorLessonsLessonIdQuizRoute =
+  CreatorLessonsLessonIdQuizRouteImport.update({
+    id: '/creator/lessons/$lessonId/quiz',
+    path: '/creator/lessons/$lessonId/quiz',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CreatorCoursesCourseIdOutlineRoute =
+  CreatorCoursesCourseIdOutlineRouteImport.update({
+    id: '/creator/courses/$courseId/outline',
+    path: '/creator/courses/$courseId/outline',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -73,6 +113,12 @@ export interface FileRoutesByFullPath {
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/creator': typeof CreatorIndexRoute
+  '/creator/courses/new': typeof CreatorCoursesNewRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
+  '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
+  '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
+  '/creator/lessons/$lessonId': typeof CreatorLessonsLessonIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -83,6 +129,12 @@ export interface FileRoutesByTo {
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/creator': typeof CreatorIndexRoute
+  '/creator/courses/new': typeof CreatorCoursesNewRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
+  '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
+  '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
+  '/creator/lessons/$lessonId': typeof CreatorLessonsLessonIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,6 +147,12 @@ export interface FileRoutesById {
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/creator/': typeof CreatorIndexRoute
+  '/creator/courses/new': typeof CreatorCoursesNewRoute
+  '/creator/courses/$courseId/outline': typeof CreatorCoursesCourseIdOutlineRoute
+  '/creator/lessons/$lessonId/quiz': typeof CreatorLessonsLessonIdQuizRoute
+  '/creator/modules/$moduleId/lessons': typeof CreatorModulesModuleIdLessonsRoute
+  '/creator/lessons/$lessonId/': typeof CreatorLessonsLessonIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +165,12 @@ export interface FileRouteTypes {
     | '/items'
     | '/settings'
     | '/'
+    | '/creator'
+    | '/creator/courses/new'
+    | '/creator/courses/$courseId/outline'
+    | '/creator/lessons/$lessonId/quiz'
+    | '/creator/modules/$moduleId/lessons'
+    | '/creator/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -117,6 +181,12 @@ export interface FileRouteTypes {
     | '/items'
     | '/settings'
     | '/'
+    | '/creator'
+    | '/creator/courses/new'
+    | '/creator/courses/$courseId/outline'
+    | '/creator/lessons/$lessonId/quiz'
+    | '/creator/modules/$moduleId/lessons'
+    | '/creator/lessons/$lessonId'
   id:
     | '__root__'
     | '/_layout'
@@ -128,6 +198,12 @@ export interface FileRouteTypes {
     | '/_layout/items'
     | '/_layout/settings'
     | '/_layout/'
+    | '/creator/'
+    | '/creator/courses/new'
+    | '/creator/courses/$courseId/outline'
+    | '/creator/lessons/$lessonId/quiz'
+    | '/creator/modules/$moduleId/lessons'
+    | '/creator/lessons/$lessonId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,6 +212,12 @@ export interface RootRouteChildren {
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  CreatorIndexRoute: typeof CreatorIndexRoute
+  CreatorCoursesNewRoute: typeof CreatorCoursesNewRoute
+  CreatorCoursesCourseIdOutlineRoute: typeof CreatorCoursesCourseIdOutlineRoute
+  CreatorLessonsLessonIdQuizRoute: typeof CreatorLessonsLessonIdQuizRoute
+  CreatorModulesModuleIdLessonsRoute: typeof CreatorModulesModuleIdLessonsRoute
+  CreatorLessonsLessonIdIndexRoute: typeof CreatorLessonsLessonIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -175,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creator/': {
+      id: '/creator/'
+      path: '/creator'
+      fullPath: '/creator'
+      preLoaderRoute: typeof CreatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
@@ -203,6 +292,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/creator/courses/new': {
+      id: '/creator/courses/new'
+      path: '/creator/courses/new'
+      fullPath: '/creator/courses/new'
+      preLoaderRoute: typeof CreatorCoursesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/lessons/$lessonId/': {
+      id: '/creator/lessons/$lessonId/'
+      path: '/creator/lessons/$lessonId'
+      fullPath: '/creator/lessons/$lessonId'
+      preLoaderRoute: typeof CreatorLessonsLessonIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/modules/$moduleId/lessons': {
+      id: '/creator/modules/$moduleId/lessons'
+      path: '/creator/modules/$moduleId/lessons'
+      fullPath: '/creator/modules/$moduleId/lessons'
+      preLoaderRoute: typeof CreatorModulesModuleIdLessonsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/lessons/$lessonId/quiz': {
+      id: '/creator/lessons/$lessonId/quiz'
+      path: '/creator/lessons/$lessonId/quiz'
+      fullPath: '/creator/lessons/$lessonId/quiz'
+      preLoaderRoute: typeof CreatorLessonsLessonIdQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator/courses/$courseId/outline': {
+      id: '/creator/courses/$courseId/outline'
+      path: '/creator/courses/$courseId/outline'
+      fullPath: '/creator/courses/$courseId/outline'
+      preLoaderRoute: typeof CreatorCoursesCourseIdOutlineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -229,6 +353,12 @@ const rootRouteChildren: RootRouteChildren = {
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  CreatorIndexRoute: CreatorIndexRoute,
+  CreatorCoursesNewRoute: CreatorCoursesNewRoute,
+  CreatorCoursesCourseIdOutlineRoute: CreatorCoursesCourseIdOutlineRoute,
+  CreatorLessonsLessonIdQuizRoute: CreatorLessonsLessonIdQuizRoute,
+  CreatorModulesModuleIdLessonsRoute: CreatorModulesModuleIdLessonsRoute,
+  CreatorLessonsLessonIdIndexRoute: CreatorLessonsLessonIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
